@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Master - Professional Flag Guessing Game</title>
+    <style>
+        /* Base styles for all elements */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body styles: font, background, layout, text color */
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff; /* White text color */
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            transition: background 1.5s ease-in-out; /* Smooth transition for background change */
+        }
+
+        /* Styles for the animated stars background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allow clicks to pass through */
+            z-index: 0; /* Behind other content */
+        }
+
+        /* Individual star styles */
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0; /* Initially hidden */
+            animation: twinkle 2s infinite alternate, fadeInStar 1s forwards; /* Twinkle and fade-in animation */
+        }
+
+        /* Keyframes for the twinkle animation */
+        @keyframes twinkle {
+            0% { opacity: 0.3; } /* Faded */
+            100% { opacity: 1; } /* Fully visible */
+        }
+
+        /* Keyframes for fade-in star animation */
+        @keyframes fadeInStar {
+            to { opacity: var(--initial-opacity, 0.7); } /* Fade in to a random opacity */
+        }
+
+        /* Start screen styles */
+        .start-screen {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 60px 40px;
+            box-shadow: 
+                0 32px 64px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            text-align: center;
+            max-width: 700px;
+            width: 95%;
+            backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .start-screen:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 40px 80px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .start-logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: -1px;
+            font-weight: 800;
+        }
+
+        .start-subtitle {
+            font-size: 1.3em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .start-description {
+            font-size: 1em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 40px;
+            line-height: 1.6;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .start-button {
+            padding: 20px 40px;
+            font-size: 1.3em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+            margin: 10px;
+        }
+
+        .start-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .start-button:hover::before {
+            left: 100%;
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+        }
+
+        .start-button:active {
+            transform: translateY(-1px);
+        }
+
+        .start-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .feature-text {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* TTS Controls */
+        .tts-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .tts-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .tts-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tts-btn.active {
+            background: rgba(102, 126, 234, 0.6);
+            border-color: #667eea;
+        }
+
+        .tts-status {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Game container styles: background, border, shadow, alignment */
+        .game-container {
+            background: rgba(255, 255, 255, 0.05); /* Semi-transparent white */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle white border */
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 
+                0 32px 64px rgba(0, 0, 0, 0.4), /* Large dark shadow */
+                inset 0 1px 0 rgba(255, 255, 255, 0.1); /* Inner light shadow */
+            text-align: center;
+            max-width: 700px;
+            width: 95%; /* Responsive width */
+            backdrop-filter: blur(20px); /* Frosted glass effect */
+            position: relative;
+            z-index: 1; /* Above stars */
+            transition: all 0.3s ease; /* Smooth transitions for hover effects */
+            display: none; /* Initially hidden */
+        }
+
+        /* Show game container when game is active */
+        .game-container.active {
+            display: block;
+        }
+
+        /* Hover effect for game container */
+        .game-container:hover {
+            transform: translateY(-2px); /* Slight lift */
+            box-shadow: 
+                0 40px 80px rgba(0, 0, 0, 0.5), /* Larger shadow on hover */
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Header section styles */
+        .header {
+            margin-bottom: 40px;
+        }
+
+        /* Main title styles: gradient text, shadow */
+        h1 {
+            color: #fff;
+            margin-bottom: 5px; /* Reduced margin to bring subtitle closer */
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb); /* Purple gradient */
+            -webkit-background-clip: text; /* Clip background to text */
+            -webkit-text-fill-color: transparent; /* Make text transparent to show gradient */
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Text shadow for depth */
+            letter-spacing: -1px;
+        }
+
+        /* Creator text style */
+        .creator-text {
+            color: rgba(255, 255, 255, 0.6); /* Slightly more transparent white */
+            font-size: 0.8em; /* Smaller font size */
+            margin-bottom: 10px; /* Adjust margin below creator name */
+            font-weight: 300;
+        }
+
+        /* Subtitle styles */
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7); /* Slightly transparent white */
+            font-size: 1.1em;
+            font-weight: 300;
+        }
+
+        /* Stats container grid layout */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Responsive columns */
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        /* Individual stat card styles */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08); /* Semi-transparent background */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease; /* Smooth transitions */
+            position: relative;
+            overflow: hidden; /* Hide overflowing pseudo-element */
+        }
+
+        /* Pseudo-element for hover shimmer effect on stat cards */
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%; /* Start off-screen to the left */
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s; /* Animate left property */
+        }
+
+        /* Hover effect for shimmer on stat cards */
+        .stat-card:hover::before {
+            left: 100%; /* Move across to the right */
+        }
+
+        /* Hover effect for stat cards */
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12); /* Slightly more opaque */
+        }
+
+        /* Stat number styles */
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        /* Stat label styles */
+        .stat-label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        /* Difficulty and Question count selector margin */
+        .difficulty-selector, .question-count-selector {
+            margin-bottom: 30px;
+        }
+
+        /* Button group layout */
+        .difficulty-buttons, .question-count-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap; /* Wrap buttons on small screens */
+        }
+
+        /* Common button styles for difficulty and question count */
+        .difficulty-btn, .question-count-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        /* Hover effect for these buttons */
+        .difficulty-btn:hover, .question-count-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        /* Active state for these buttons */
+        .difficulty-btn.active, .question-count-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2); /* Purple gradient */
+            border-color: #667eea;
+            color: #fff;
+        }
+
+        /* Progress container margin */
+        .progress-container {
+            margin-bottom: 30px;
+        }
+
+        /* Progress info text layout */
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Progress bar track styles */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Progress bar fill styles with shimmer animation */
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb); /* Purple gradient */
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth width transition */
+            border-radius: 3px;
+            position: relative;
+        }
+
+        /* Pseudo-element for shimmer effect on progress bar */
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite; /* Shimmer animation */
+        }
+
+        /* Keyframes for shimmer animation */
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); } /* Start off-screen left */
+            100% { transform: translateX(100%); } /* Move across to the right */
+        }
+
+        /* Flag section styles: background, border, shadow, animations */
+        .flag-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden; /* Hide overflowing pseudo-element */
+        }
+
+        /* Pseudo-element for border glow effect on flag section */
+        .flag-section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #667eea); /* Multi-color gradient */
+            border-radius: 20px;
+            opacity: 0; /* Initially hidden */
+            transition: opacity 0.3s ease;
+            z-index: -1; /* Behind content */
+        }
+
+        /* Hover effect for border glow on flag section */
+        .flag-section:hover::before {
+            opacity: 0.5;
+        }
+
+        /* Flag container margin */
+        .flag-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        /* Flag image container styles: size, shadow, centering */
+        .flag-image {
+            width: 280px;
+            height: 180px;
+            margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #f8f9fa; /* Placeholder background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            color: #666;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Styles for actual flag image inside container */
+        .flag-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the container */
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        /* Hover effect for flag image: slight scale */
+        .flag-image:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Loading spinner animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea; /* Color for the spinning part */
+            animation: spin 1s ease-in-out infinite; /* Spin animation */
+        }
+
+        /* Keyframes for spin animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Question text styles */
+        .question-text {
+            font-size: 1.3em;
+            color: #fff;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        /* Options grid layout */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive columns */
+            gap: 15px;
+            margin: 40px 0;
+        }
+
+        /* Option button styles with shimmer effect */
+        .option-btn {
+            padding: 18px 24px;
+            font-size: 1.1em;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden; /* Hide overflowing pseudo-element */
+        }
+
+        /* Pseudo-element for hover shimmer on option buttons */
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        /* Hover effect for shimmer on option buttons */
+        .option-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Hover and active effects for option buttons */
+        .option-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .option-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Styles for correct answer button */
+        .option-btn.correct {
+            background: linear-gradient(135deg, #48bb78, #38a169); /* Green gradient */
+            border-color: #48bb78;
+            animation: correctPulse 0.6s ease-in-out; /* Pulse animation */
+        }
+
+        /* Styles for incorrect answer button */
+        .option-btn.incorrect {
+            background: linear-gradient(135deg, #f56565, #e53e3e); /* Red gradient */
+            border-color: #f56565;
+            animation: incorrectShake 0.6s ease-in-out; /* Shake animation */
+        }
+
+        /* Styles for disabled option buttons */
+        .option-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important; /* Override hover/active transforms */
+        }
+
+        /* Keyframes for correct pulse animation */
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Keyframes for incorrect shake animation */
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Feedback section styles */
+        .feedback-section {
+            margin: 30px 0;
+            min-height: 60px; /* Ensure space even when empty */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Feedback message styles */
+        .feedback {
+            font-size: 1.4em;
+            font-weight: 600;
+            padding: 15px 30px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            opacity: 0; /* Initially hidden */
+            transform: translateY(10px); /* Initially slightly down */
+        }
+
+        /* Show feedback animation */
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Correct feedback style */
+        .feedback.correct {
+            background: rgba(72, 187, 120, 0.2); /* Semi-transparent green */
+            border: 1px solid rgba(72, 187, 120, 0.3);
+            color: #68d391; /* Light green text */
+        }
+
+        /* Incorrect feedback style */
+        .feedback.incorrect {
+            background: rgba(245, 101, 101, 0.2); /* Semi-transparent red */
+            border: 1px solid rgba(245, 101, 101, 0.3);
+            color: #f56565; /* Red text */
+        }
+
+        /* Controls section layout */
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Control button styles with shimmer effect */
+        .control-btn {
+            padding: 16px 32px;
+            font-size: 1.1em;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2); /* Purple gradient */
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); /* Blue shadow */
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Pseudo-element for shimmer on control buttons */
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        /* Hover effect for shimmer on control buttons */
+        .control-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Hover and active effects for control buttons */
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5); /* Larger shadow on hover */
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Disabled state for control buttons */
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        /* Specific style for restart button */
+        .restart-btn {
+            background: linear-gradient(135deg, #f093fb, #f5576c); /* Pink-red gradient */
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4); /* Pink shadow */
+        }
+
+        /* Hover effect for restart button */
+        .restart-btn:hover {
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.5);
+        }
+
+        /* Back to menu button */
+        .menu-btn {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .menu-btn:hover {
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.5);
+        }
+
+        /* Timer display styles */
+        .timer {
+            font-size: 1.2em;
+            color: #fff;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: inline-block; /* Allow padding and border-radius */
+            font-weight: 600;
+        }
+
+        /* Warning style for timer (low time) */
+        .timer.warning {
+            color: #f56565; /* Red warning color */
+            animation: timerPulse 1s infinite; /* Pulse animation */
+        }
+
+        /* Keyframes for timer pulse animation */
+        @keyframes timerPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .game-container, .start-screen {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            h1, .start-logo {
+                font-size: 2.2em;
+            }
+            
+            .flag-image {
+                width: 220px;
+                height: 140px;
+            }
+            
+            .options-grid {
+                grid-template-columns: 1fr; /* Single column layout */
+                gap: 12px;
+            }
+            
+            .controls {
+                flex-direction: column; /* Stack buttons vertically */
+                align-items: center;
+            }
+
+            .start-features {
+                grid-template-columns: 1fr;
+            }
+
+            .tts-controls {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="starsContainer"></div>
+    
+    <!-- TTS Controls -->
+    <div class="tts-controls">
+        <button class="tts-btn" id="ttsToggle" onclick="toggleTTS()">🔊 TTS: ON</button>
+        <div class="tts-status" id="ttsStatus">Ready</div>
+    </div>
+    
+    <!-- Start Screen -->
+    <div class="start-screen" id="startScreen">
+        <div class="start-logo">🏆 Flag Master</div>
+        <div class="start-subtitle">Uji Pengetahuan Geografi Anda</div>
+        <div class="start-description">
+            Tantang diri Anda dengan permainan tebak bendera yang menarik! Dari bendera yang mudah dikenali hingga yang paling menantang, bersiaplah untuk petualangan geografis yang seru.
+        </div>
+        
+        <button class="start-button" onclick="startGame()">🚀 Mulai Permainan</button>
+        
+        <div class="start-features">
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">3 Level Kesulitan</div>
+                <div class="feature-text">Mudah, Sedang, dan Sulit dengan jumlah pilihan yang berbeda</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⏱️</div>
+                <div class="feature-title">Tantangan Waktu</div>
+                <div class="feature-text">Timer yang menantang untuk setiap pertanyaan</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎤</div>
+                <div class="feature-title">Voice Over</div>
+                <div class="feature-text">Panduan suara untuk pengalaman yang lebih menarik</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Statistik Detail</div>
+                <div class="feature-text">Lacak skor, akurasi, dan rentetan jawaban benar</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Game Container -->
+    <div class="game-container" id="gameContainer">
+        <div class="header">
+            <h1>🏆 Flag Master</h1>
+            <p class="creator-text">By Moch Afrizal Ardiansyah</p>
+            <p class="subtitle">Uji pengetahuan geografi Anda dengan bendera dari seluruh dunia</p>
+        </div>
+        
+        <div class="difficulty-selector">
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn active" data-difficulty="easy">Mudah (4 pilihan)</button>
+                <button class="difficulty-btn" data-difficulty="medium">Sedang (6 pilihan)</button>
+                <button class="difficulty-btn" data-difficulty="hard">Sulit (8 pilihan)</button>
+            </div>
+        </div>
+
+        <div class="question-count-selector">
+            <div class="question-count-buttons">
+                <button class="question-count-btn active" data-count="20">20 Soal</button>
+                <button class="question-count-btn" data-count="30">30 Soal</button>
+                <button class="question-count-btn" data-count="50">50 Soal</button>
+                <button class="question-count-btn" data-count="70">70 Soal</button>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="score">0</div>
+                <div class="stat-label">Skor</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="question">1</div>
+                <div class="stat-label">Pertanyaan</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="streak">0</div>
+                <div class="stat-label">Rentetan</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="accuracy">0%</div>
+                <div class="stat-label">Akurasi</div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span>Progres</span>
+                <span id="progressText">Pertanyaan 1 dari 20</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="timer" id="timer">Waktu: 30s</div>
+
+        <div class="flag-section">
+            <div class="flag-container">
+                <div class="flag-image" id="flagContainer">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+            <h2 class="question-text" id="questionText">Bendera ini milik negara mana?</h2>
+        </div>
+
+        <div class="options-grid" id="optionsContainer">
+            <!-- Pilihan akan dibuat oleh JavaScript -->
+        </div>
+
+        <div class="feedback-section">
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="nextBtn" onclick="nextQuestion()" disabled>Pertanyaan Berikutnya</button>
+            <button class="control-btn restart-btn" id="restartBtn" onclick="restartGame()">Mulai Ulang Permainan</button>
+            <button class="control-btn menu-btn" id="menuBtn" onclick="backToMenu()">Kembali ke Menu</button>
+        </div>
+    </div>
+
+    <script>
+        // TTS System variables
+        let ttsEnabled = true;
+        let currentSpeech = null;
+        let speechSynthesis = window.speechSynthesis;
+        let indonesianVoice = null;
+
+        // Initialize TTS voices
+        function initializeTTS() {
+            const voices = speechSynthesis.getVoices();
+            // Try to find Indonesian voice, fallback to default
+            indonesianVoice = voices.find(voice => 
+                voice.lang.includes('id') || 
+                voice.lang.includes('ID') ||
+                voice.name.toLowerCase().includes('indonesia')
+            ) || voices.find(voice => 
+                voice.lang.includes('en')
+            ) || voices[0];
+            
+            updateTTSStatus();
+        }
+
+        // Update TTS status display
+        function updateTTSStatus() {
+            const statusEl = document.getElementById('ttsStatus');
+            const toggleEl = document.getElementById('ttsToggle');
+            
+            if (!speechSynthesis) {
+                statusEl.textContent = 'Not supported';
+                toggleEl.textContent = '🔇 TTS: OFF';
+                ttsEnabled = false;
+                return;
+            }
+            
+            if (ttsEnabled) {
+                statusEl.textContent = indonesianVoice ? `Voice: ${indonesianVoice.name}` : 'Ready';
+                toggleEl.textContent = '🔊 TTS: ON';
+                toggleEl.classList.add('active');
+            } else {
+                statusEl.textContent = 'Disabled';
+                toggleEl.textContent = '🔇 TTS: OFF';
+                toggleEl.classList.remove('active');
+            }
+        }
+
+        // Toggle TTS on/off
+        function toggleTTS() {
+            ttsEnabled = !ttsEnabled;
+            if (!ttsEnabled && currentSpeech) {
+                speechSynthesis.cancel();
+                currentSpeech = null;
+            }
+            updateTTSStatus();
+        }
+
+        // Enhanced TTS function using Web Speech API
+        async function playTTS(text) {
+            if (!ttsEnabled || !speechSynthesis) {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve) => {
+                // Cancel any ongoing speech
+                if (currentSpeech) {
+                    speechSynthesis.cancel();
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                currentSpeech = utterance;
+
+                // Configure voice settings
+                if (indonesianVoice) {
+                    utterance.voice = indonesianVoice;
+                }
+                
+                utterance.rate = 0.9; // Slightly slower for clarity
+                utterance.pitch = 1.0;
+                utterance.volume = 0.8;
+
+                // Event handlers
+                utterance.onend = () => {
+                    currentSpeech = null;
+                    resolve();
+                };
+
+                utterance.onerror = (event) => {
+                    console.warn('TTS Error:', event.error);
+                    currentSpeech = null;
+                    resolve();
+                };
+
+                utterance.onstart = () => {
+                    document.getElementById('ttsStatus').textContent = 'Speaking...';
+                };
+
+                // Speak the text
+                try {
+                    speechSynthesis.speak(utterance);
+                    
+                    // Fallback timeout in case onend doesn't fire
+                    setTimeout(() => {
+                        if (currentSpeech === utterance) {
+                            currentSpeech = null;
+                            resolve();
+                        }
+                    }, text.length * 100 + 3000); // Estimate based on text length
+                    
+                } catch (error) {
+                    console.warn('TTS Speak Error:', error);
+                    currentSpeech = null;
+                    resolve();
+                }
+                
+                // Update status back after a short delay
+                setTimeout(() => {
+                    if (document.getElementById('ttsStatus').textContent === 'Speaking...') {
+                        updateTTSStatus();
+                    }
+                }, 1000);
+            });
+        }
+
+        // Game state variables
+        let gameStarted = false;
+        let currentQuestion = 0;
+        let score = 0;
+        let streak = 0;
+        let totalQuestions = 0;
+        let correctAnswers = 0;
+        let currentFlag = null;
+        let answered = false;
+        let usedFlags = [];
+        let difficulty = 'easy';
+        let timeLeft = 30;
+        let timer = null;
+        let questionsPerRound = 20;
+        let sessionFlags = [];
+
+        // Difficulty settings configuration
+        const difficultySettings = {
+            easy: { options: 4, time: 30, points: 10 },
+            medium: { options: 6, time: 25, points: 15 },
+            hard: { options: 8, time: 20, points: 20 }
+        };
+
+        // Flag data using flag API (Country Code and Country Name)
+        const flagData = [
+            { code: 'us', country: 'Amerika Serikat' },
+            { code: 'gb', country: 'Inggris' },
+            { code: 'fr', country: 'Prancis' },
+            { code: 'de', country: 'Jerman' },
+            { code: 'it', country: 'Italia' },
+            { code: 'es', country: 'Spanyol' },
+            { code: 'ca', country: 'Kanada' },
+            { code: 'jp', country: 'Jepang' },
+            { code: 'cn', country: 'China' },
+            { code: 'kr', country: 'Korea Selatan' },
+            { code: 'br', country: 'Brasil' },
+            { code: 'ar', country: 'Argentina' },
+            { code: 'mx', country: 'Meksiko' },
+            { code: 'au', country: 'Australia' },
+            { code: 'in', country: 'India' },
+            { code: 'ru', country: 'Rusia' },
+            { code: 'za', country: 'Afrika Selatan' },
+            { code: 'eg', country: 'Mesir' },
+            { code: 'ng', country: 'Nigeria' },
+            { code: 'tr', country: 'Turki' },
+            { code: 'nl', country: 'Belanda' },
+            { code: 'se', country: 'Swedia' },
+            { code: 'no', country: 'Norwegia' },
+            { code: 'dk', country: 'Denmark' },
+            { code: 'fi', country: 'Finlandia' },
+            { code: 'ch', country: 'Swiss' },
+            { code: 'at', country: 'Austria' },
+            { code: 'be', country: 'Belgia' },
+            { code: 'pt', country: 'Portugal' },
+            { code: 'gr', country: 'Yunani' },
+            { code: 'ie', country: 'Irlandia' },
+            { code: 'pl', country: 'Polandia' },
+            { code: 'cz', country: 'Republik Ceko' },
+            { code: 'hu', country: 'Hungaria' },
+            { code: 'ro', country: 'Rumania' },
+            { code: 'ua', country: 'Ukraina' },
+            { code: 'th', country: 'Thailand' },
+            { code: 'vn', country: 'Vietnam' },
+            { code: 'ph', country: 'Filipina' },
+            { code: 'id', country: 'Indonesia' },
+            { code: 'my', country: 'Malaysia' },
+            { code: 'sg', country: 'Singapura' },
+            { code: 'sa', country: 'Arab Saudi' },
+            { code: 'ae', country: 'Uni Emirat Arab' },
+            { code: 'cl', country: 'Chile' },
+            { code: 'pe', country: 'Peru' },
+            { code: 'co', country: 'Kolombia' },
+            { code: 've', country: 'Venezuela' },
+            { code: 'ke', country: 'Kenya' },
+            { code: 'et', country: 'Ethiopia' },
+            { code: 'gh', country: 'Ghana' },
+            { code: 'ma', country: 'Maroko' },
+            { code: 'tn', country: 'Tunisia' },
+            { code: 'dz', country: 'Aljazair' },
+            { code: 'nz', country: 'Selandia Baru' },
+            { code: 'is', country: 'Islandia' },
+            { code: 'lu', country: 'Luksemburg' },
+            { code: 'mt', country: 'Malta' },
+            { code: 'cy', country: 'Siprus' },
+            { code: 'ee', country: 'Estonia' },
+            { code: 'lv', country: 'Latvia' },
+            { code: 'lt', country: 'Lithuania' },
+            { code: 'sk', country: 'Slovakia' },
+            { code: 'si', country: 'Slovenia' },
+            { code: 'hr', country: 'Kroasia' },
+            { code: 'ba', country: 'Bosnia Herzegovina' },
+            { code: 'rs', country: 'Serbia' },
+            { code: 'me', country: 'Montenegro' },
+            { code: 'mk', country: 'Makedonia Utara' },
+            { code: 'al', country: 'Albania' },
+            { code: 'bg', country: 'Bulgaria' },
+            { code: 'md', country: 'Moldova' },
+            { code: 'by', country: 'Belarus' },
+            { code: 'kz', country: 'Kazakhstan' },
+            { code: 'uz', country: 'Uzbekistan' },
+            { code: 'kg', country: 'Kyrgyzstan' },
+            { code: 'tj', country: 'Tajikistan' },
+            { code: 'tm', country: 'Turkmenistan' },
+            { code: 'af', country: 'Afghanistan' },
+            { code: 'pk', country: 'Pakistan' },
+            { code: 'bd', country: 'Bangladesh' },
+            { code: 'lk', country: 'Sri Lanka' },
+            { code: 'mv', country: 'Maladewa' },
+            { code: 'np', country: 'Nepal' },
+            { code: 'bt', country: 'Bhutan' },
+            { code: 'mm', country: 'Myanmar' },
+            { code: 'kh', country: 'Kamboja' },
+            { code: 'la', country: 'Laos' },
+            { code: 'bn', country: 'Brunei' },
+            { code: 'kp', country: 'Korea Utara' },
+            { code: 'mn', country: 'Mongolia' },
+            { code: 'ir', country: 'Iran' },
+            { code: 'iq', country: 'Irak' },
+            { code: 'sy', country: 'Syria' },
+            { code: 'lb', country: 'Lebanon' },
+            { code: 'jo', country: 'Jordania' },
+            { code: 'kw', country: 'Kuwait' },
+            { code: 'bh', country: 'Bahrain' },
+            { code: 'qa', country: 'Qatar' },
+            { code: 'om', country: 'Oman' },
+            { code: 'ye', country: 'Yaman' }
+        ];
+
+        // Define multiple gradient backgrounds
+        const gradientBackgrounds = [
+            'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)',
+            'linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2f3e4c 100%)',
+            'linear-gradient(135deg, #4b0082 0%, #6a0dad 50%, #8a2be2 100%)',
+            'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #2e8a99 100%)',
+            'linear-gradient(135deg, #8e44ad 0%, #9b59b6 50%, #be90d4 100%)',
+            'linear-gradient(135deg, #c0392b 0%, #e74c3c 50%, #f1c40f 100%)',
+            'linear-gradient(135deg, #004d40 0%, #00796b 50%, #4db6ac 100%)',
+            'linear-gradient(135deg, #0a0e20 0%, #1c2a41 50%, #344b70 100%)'
+        ];
+
+        // Function to start the game
+        async function startGame() {
+            gameStarted = true;
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameContainer').classList.add('active');
+            
+            // Play welcome message
+            await playTTS("Selamat datang di Flag Master! Mari kita mulai permainan tebak bendera. Bersiaplah untuk tantangan pertama!");
+            
+            // Initialize game
+            initGame();
+        }
+
+        // Function to go back to menu
+        async function backToMenu() {
+            gameStarted = false;
+            stopTimer();
+            document.getElementById('gameContainer').classList.remove('active');
+            document.getElementById('startScreen').style.display = 'block';
+            
+            // Reset game state
+            resetGameState();
+            
+            await playTTS("Kembali ke menu utama. Terima kasih sudah bermain!");
+        }
+
+        // Function to reset game state
+        function resetGameState() {
+            currentQuestion = 0;
+            score = 0;
+            streak = 0;
+            totalQuestions = 0;
+            correctAnswers = 0;
+            usedFlags = [];
+            streakHistory = [];
+            answered = false;
+            sessionFlags = [];
+            
+            updateStats();
+        }
+
+        // Function to set a random background gradient
+        function setRandomBackground() {
+            const randomIndex = Math.floor(Math.random() * gradientBackgrounds.length);
+            document.body.style.background = gradientBackgrounds[randomIndex];
+        }
+
+        // Function to create animated stars in the background
+        function createStars() {
+            const starsContainer = document.getElementById('starsContainer');
+            starsContainer.innerHTML = '';
+            const numberOfStars = 150;
+
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                const size = Math.random() * 3 + 1;
+                star.style.width = size + 'px'; 
+                star.style.height = size + 'px';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                star.style.setProperty('--initial-opacity', Math.random() * 0.5 + 0.3);
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Event listeners for difficulty selection buttons
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                difficulty = btn.dataset.difficulty;
+                if (gameStarted) {
+                    restartGame();
+                }
+            });
+        });
+
+        // Event listeners for question count selection buttons
+        document.querySelectorAll('.question-count-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.question-count-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                questionsPerRound = parseInt(btn.dataset.count);
+                if (gameStarted) {
+                    restartGame();
+                }
+            });
+        });
+
+        // Function to start the question timer
+        function startTimer() {
+            timeLeft = difficultySettings[difficulty].time;
+            updateTimerDisplay();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 5) {
+                    document.getElementById('timer').classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        // Function to stop the question timer
+        function stopTimer() {
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
+            document.getElementById('timer').classList.remove('warning');
+        }
+
+        // Function to update the timer display
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = `Waktu: ${timeLeft}s`;
+        }
+
+        // Function to handle when time runs out
+        async function timeUp() {
+            if (!answered) {
+                answered = true;
+                streak = 0;
+                showFeedback('⏰ Waktu habis!', 'incorrect');
+                highlightCorrectAnswer();
+                updateStats();
+                document.getElementById('nextBtn').disabled = false;
+                
+                // Voice feedback for time up
+                await playTTS(`Waktu habis! Jawaban yang benar adalah ${currentFlag.country}`);
+            }
+        }
+
+        // Function to get flag image URLs from various sources
+        function getFlagUrl(countryCode) {
+            const flagSources = [
+                `https://flagcdn.com/w320/${countryCode.toLowerCase()}.png`,
+                `https://flagpedia.net/data/flags/w580/${countryCode.toLowerCase()}.png`,
+                `https://www.worldometers.info/img/flags/${countryCode.toLowerCase()}-flag.gif`
+            ];
+            return flagSources;
+        }
+
+        // Utility function to shuffle an array
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Function to get random flag options for the current question
+        function getRandomFlags(correct, count) {
+            const options = [correct];
+            const availableFlags = sessionFlags.filter(f => f.country !== correct.country);
+            
+            while (options.length < count && availableFlags.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableFlags.length);
+                const randomFlag = availableFlags[randomIndex];
+                if (!options.find(opt => opt.country === randomFlag.country)) {
+                    options.push(randomFlag);
+                }
+                availableFlags.splice(randomIndex, 1);
+            }
+            
+            if (options.length < count) {
+                const remainingFlags = flagData.filter(f => 
+                    !options.find(opt => opt.country === f.country)
+                );
+                
+                while (options.length < count && remainingFlags.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * remainingFlags.length);
+                    const randomFlag = remainingFlags[randomIndex];
+                    options.push(randomFlag);
+                    remainingFlags.splice(randomIndex, 1);
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+
+        // Function to load the flag image or fallback to CSS-based flag
+        function loadFlagImage(flagData) {
+            const flagContainer = document.getElementById('flagContainer');
+            flagContainer.innerHTML = '<div class="loading-spinner"></div>';
+            
+            const flagSources = getFlagUrl(flagData.code);
+            let currentSourceIndex = 0;
+            let imageLoadTimeout;
+            
+            function tryLoadFlag() {
+                if (currentSourceIndex >= flagSources.length) {
+                    showCSSFlag();
+                    return;
+                }
+                
+                if (imageLoadTimeout) {
+                    clearTimeout(imageLoadTimeout);
+                }
+                
+                const img = new Image();
+                
+                imageLoadTimeout = setTimeout(() => {
+                    currentSourceIndex++;
+                    tryLoadFlag();
+                }, 2000);
+                
+                img.onload = function() {
+                    clearTimeout(imageLoadTimeout);
+                    flagContainer.innerHTML = `<img src="${this.src}" alt="Bendera ${flagData.country}" />`;
+                };
+                
+                img.onerror = function() {
+                    clearTimeout(imageLoadTimeout);
+                    currentSourceIndex++;
+                    tryLoadFlag();
+                };
+                
+                img.crossOrigin = "anonymous";
+                img.src = flagSources[currentSourceIndex];
+            }
+            
+            function showCSSFlag() {
+                const flagColors = getFlagColors(flagData.code);
+                const flagHtml = createCSSFlag(flagColors, flagData.country);
+                flagContainer.innerHTML = flagHtml;
+            }
+            
+            setTimeout(() => {
+                if (flagContainer.innerHTML.includes('loading-spinner')) {
+                    showCSSFlag();
+                }
+            }, 1000);
+            
+            tryLoadFlag();
+        }
+
+        // CSS Flag colors and patterns for major countries
+        function getFlagColors(countryCode) {
+            const flagColors = {
+                'us': ['#B22234', '#FFFFFF', '#3C3B6E'],
+                'gb': ['#012169', '#FFFFFF', '#C8102E'],
+                'fr': ['#0055A4', '#FFFFFF', '#EF4135'],
+                'de': ['#000000', '#DD0000', '#FFCE00'],
+                'it': ['#009246', '#FFFFFF', '#CE2B37'],
+                'es': ['#AA151B', '#F1BF00', '#AA151B'],
+                'ca': ['#FF0000', '#FFFFFF', '#FF0000'],
+                'jp': ['#FFFFFF', '#BC002D', '#FFFFFF'],
+                'cn': ['#DE2910', '#FFDE00', '#DE2910'],
+                'br': ['#009739', '#FEDD00', '#012169'],
+                'ar': ['#74ACDF', '#FFFFFF', '#74ACDF'],
+                'au': ['#012169', '#FFFFFF', '#E4002B'],
+                'in': ['#FF9933', '#FFFFFF', '#138808'],
+                'ru': ['#FFFFFF', '#0039A6', '#D52B1E'],
+                'mx': ['#006847', '#FFFFFF', '#CE1126'],
+            };
+            return flagColors[countryCode.toLowerCase()] || ['#4A5568', '#FFFFFF', '#4A5568']; 
+        }
+
+        // Function to create an HTML element representing a flag using CSS stripes/colors
+        function createCSSFlag(colors, countryName) {
+            const [color1, color2, color3] = colors;
+            return `
+                <div style="
+                    width: 240px; 
+                    height: 160px; 
+                    margin: 0 auto; 
+                    border-radius: 12px; 
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    position: relative;
+                ">
+                    <div style="
+                        width: 100%; 
+                        height: 33.33%;
+                        background: ${color1};
+                    "></div>
+                    <div style="
+                        width: 100%; 
+                        height: 33.33%;
+                        background: ${color2};
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: ${color2 === '#FFFFFF' ? '#333' : '#FFF'};
+                        font-weight: bold;
+                        font-size: 0.9em;
+                    ">${countryName.substring(0, 3).toUpperCase()}</div>
+                    <div style="
+                        width: 100%; 
+                        height: 33.33%;
+                        background: ${color3};
+                    "></div>
+                    <div style="
+                        position: absolute;
+                        bottom: 5px;
+                        right: 8px;
+                        background: rgba(0,0,0,0.7);
+                        color: white;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-size: 0.75em;
+                        font-weight: 500;
+                    ">${countryName}</div>
+                </div>
+            `;
+        }
+
+        // Function to generate a new question
+        async function generateQuestion() {
+            if (sessionFlags.length === 0 || sessionFlags.length !== questionsPerRound) {
+                initializeSessionFlags();
+            }
+
+            if (usedFlags.length >= sessionFlags.length) {
+                usedFlags = [];
+            }
+
+            const availableFlags = sessionFlags.filter(flag => !usedFlags.includes(flag.country));
+            if (availableFlags.length === 0 && sessionFlags.length > 0) {
+                initializeSessionFlags();
+                const newAvailableFlags = sessionFlags.filter(flag => !usedFlags.includes(flag.country));
+                if (newAvailableFlags.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * newAvailableFlags.length);
+                    currentFlag = newAvailableFlags[randomIndex];
+                    usedFlags.push(currentFlag.country);
+                } else {
+                    console.error("Tidak ada bendera yang tersedia untuk pertanyaan, meskipun setelah diinisialisasi ulang.");
+                    return;
+                }
+            } else if (availableFlags.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableFlags.length);
+                currentFlag = availableFlags[randomIndex];
+                usedFlags.push(currentFlag.country);
+            } else {
+                 console.error("Tidak ada bendera yang tersedia untuk pertanyaan.");
+                 return;
+            }
+
+            const optionCount = difficultySettings[difficulty].options;
+            const options = getRandomFlags(currentFlag, optionCount);
+            
+            loadFlagImage(currentFlag);
+            generateOptions(options);
+            
+            answered = false;
+            document.getElementById('nextBtn').disabled = true;
+            hideFeedback();
+            
+            updateProgress();
+            startTimer();
+
+            // Voice over for question
+            if (currentQuestion === 0) {
+                await playTTS(`Pertanyaan pertama! Bendera ini milik negara mana?`);
+            } else {
+                await playTTS(`Pertanyaan ke ${currentQuestion + 1}. Tebak bendera ini!`);
+            }
+        }
+
+        // Function to initialize random flags for the current game session
+        function initializeSessionFlags() {
+            const allFlags = [...flagData];
+            sessionFlags = [];
+            
+            for (let i = 0; i < questionsPerRound && allFlags.length > 0; i++) {
+                const randomIndex = Math.floor(Math.random() * allFlags.length);
+                sessionFlags.push(allFlags[randomIndex]);
+                allFlags.splice(randomIndex, 1);
+            }
+            
+            console.log('Bendera sesi diinisialisasi:', sessionFlags.map(f => f.country));
+        }
+
+        // Function to generate the answer option buttons
+        function generateOptions(options) {
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option.country;
+                button.onclick = () => selectAnswer(option.country, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Function to handle answer selection
+        async function selectAnswer(selectedCountry, buttonElement) {
+            if (answered) return;
+            
+            answered = true;
+            stopTimer();
+            
+            const isCorrect = selectedCountry === currentFlag.country;
+            totalQuestions++;
+            
+            if (isCorrect) {
+                const points = difficultySettings[difficulty].points;
+                const timeBonus = Math.max(0, Math.floor(timeLeft / 5));
+                const streakBonus = Math.min(streak * 2, 20);
+                const totalPoints = points + timeBonus + streakBonus;
+                
+                score += totalPoints;
+                streak++;
+                correctAnswers++;
+                
+                let message = '🎉 Benar!';
+                if (timeBonus > 0) message += ` (+${timeBonus} bonus waktu)`;
+                if (streakBonus > 0) message += ` (+${streakBonus} bonus rentetan)`;
+                
+                showFeedback(message, 'correct');
+                buttonElement.classList.add('correct');
+                playSound('correct');
+                
+                // Voice feedback for correct answer
+                const encouragements = [
+                    'Benar sekali! Hebat!',
+                    'Bagus! Jawaban yang tepat!', 
+                    'Luar biasa! Anda benar!',
+                    'Sempurna! Jawaban yang benar!',
+                    'Mantap! Itu dia jawabannya!'
+                ];
+                const randomEncouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+                await playTTS(randomEncouragement);
+                
+            } else {
+                streak = 0;
+                showFeedback(`❌ Salah! Itu adalah ${currentFlag.country}`, 'incorrect');
+                buttonElement.classList.add('incorrect');
+                highlightCorrectAnswer();
+                playSound('incorrect');
+                
+                // Voice feedback for incorrect answer
+                await playTTS(`Sayang sekali, jawaban yang benar adalah ${currentFlag.country}. Jangan menyerah, terus semangat!`);
+            }
+            
+            disableAllOptions();
+            updateStats();
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        // Function to highlight the correct answer button
+        function highlightCorrectAnswer() {
+            const allButtons = document.querySelectorAll('.option-btn');
+            allButtons.forEach(btn => {
+                if (btn.textContent === currentFlag.country) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        // Function to disable all option buttons after an answer is selected
+        function disableAllOptions() {
+            const allButtons = document.querySelectorAll('.option-btn');
+            allButtons.forEach(btn => {
+                btn.classList.add('disabled');
+                btn.style.pointerEvents = 'none';
+            });
+        }
+
+        // Function to show feedback message
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type} show`;
+        }
+
+        // Function to hide feedback message
+        function hideFeedback() {
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback';
+        }
+
+        // Function to proceed to the next question
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion >= questionsPerRound) {
+                showGameComplete();
+                return;
+            }
+            
+            generateQuestion();
+        }
+
+        // Function to display end-of-game summary
+        async function showGameComplete() {
+            const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+            const flagContainer = document.getElementById('flagContainer');
+            
+            flagContainer.innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2 style="color: #667eea; margin-bottom: 20px;">🏆 Permainan Selesai!</h2>
+                    <div style="font-size: 1.2em; line-height: 1.6;">
+                        <div>Skor Akhir: <strong>${score}</strong></div>
+                        <div>Pertanyaan: <strong>${correctAnswers}/${totalQuestions}</strong></div>
+                        <div>Akurasi: <strong>${accuracy}%</strong></div>
+                        <div>Rentetan Terbaik: <strong>${Math.max(0, ...streakHistory)}</strong></div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('questionText').textContent = 'Kerja bagus! Siap untuk ronde berikutnya?';
+            document.getElementById('optionsContainer').innerHTML = '';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            const performanceMessage = getPerformanceMessage(accuracy);
+            showFeedback(performanceMessage, accuracy >= 70 ? 'correct' : 'incorrect');
+            
+            // Voice feedback for game completion
+            let completionMessage = `Permainan selesai! Skor akhir Anda adalah ${score} poin. `;
+            completionMessage += `Anda berhasil menjawab ${correctAnswers} dari ${totalQuestions} pertanyaan dengan akurasi ${accuracy} persen. `;
+            
+            if (accuracy >= 90) {
+                completionMessage += "Luar biasa! Anda adalah master geografi sejati!";
+            } else if (accuracy >= 80) {
+                completionMessage += "Kerja sangat baik! Pengetahuan geografi Anda sangat mengesankan!";
+            } else if (accuracy >= 70) {
+                completionMessage += "Kerja bagus! Teruslah berlatih untuk menjadi lebih baik lagi!";
+            } else if (accuracy >= 50) {
+                completionMessage += "Tidak buruk! Masih ada ruang untuk perbaikan, tapi Anda sudah di jalan yang benar!";
+            } else {
+                completionMessage += "Jangan menyerah! Setiap permainan adalah kesempatan untuk belajar lebih banyak tentang dunia!";
+            }
+            
+            await playTTS(completionMessage);
+        }
+
+        // Function to get a performance message based on accuracy
+        function getPerformanceMessage(accuracy) {
+            if (accuracy >= 90) return '🏆 Luar Biasa! Master geografi!';
+            if (accuracy >= 80) return '🌟 Kerja sangat baik! Bagus sekali!';
+            if (accuracy >= 70) return '👍 Kerja bagus! Teruslah berlatih!';
+            if (accuracy >= 50) return '📚 Tidak buruk! Ada ruang untuk perbaikan!';
+            return '🎯 Teruslah berlatih! Anda akan menjadi lebih baik!';
+        }
+
+        let streakHistory = [];
+
+        // Function to update game statistics display
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            
+            if (answered) {
+                streakHistory.push(streak);
+            }
+            
+            const accuracy = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        // Function to update progress bar and text
+        function updateProgress() {
+            const questionNumber = currentQuestion + 1;
+            document.getElementById('question').textContent = questionNumber;
+            document.getElementById('progressText').textContent = `Pertanyaan ${questionNumber} dari ${questionsPerRound}`;
+            
+            const progress = (currentQuestion / questionsPerRound) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Function to restart the game
+        async function restartGame() {
+            resetGameState();
+            
+            stopTimer();
+            
+            document.getElementById('nextBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').disabled = true;
+            
+            updateStats();
+            setRandomBackground();
+            createStars();
+            
+            await playTTS("Memulai permainan baru! Mari kita lihat seberapa baik Anda kali ini!");
+            generateQuestion();
+        }
+
+        // Keyboard shortcuts for answering and navigating
+        document.addEventListener('keydown', (e) => {
+            if (!gameStarted) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    startGame();
+                }
+                return;
+            }
+            
+            if (answered) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (!document.getElementById('nextBtn').disabled) {
+                        nextQuestion();
+                    }
+                }
+                return;
+            }
+            
+            const optionButtons = document.querySelectorAll('.option-btn');
+            const keyNum = parseInt(e.key);
+            if (keyNum >= 1 && keyNum <= optionButtons.length) {
+                e.preventDefault();
+                optionButtons[keyNum - 1].click();
+            }
+        });
+
+        // Function to add keyboard hint numbers to option buttons
+        function addKeyboardHints() {
+            const optionsContainer = document.getElementById('optionsContainer');
+            const observer = new MutationObserver(() => {
+                const buttons = optionsContainer.querySelectorAll('.option-btn');
+                buttons.forEach((btn, index) => {
+                    if (!btn.querySelector('.key-hint')) {
+                        const hint = document.createElement('span');
+                        hint.className = 'key-hint';
+                        hint.textContent = ` (${index + 1})`;
+                        hint.style.opacity = '0.6';
+                        hint.style.fontSize = '0.8em';
+                        btn.appendChild(hint);
+                    }
+                });
+            });
+            
+            observer.observe(optionsContainer, { childList: true });
+        }
+
+        // Sound effects for correct/incorrect answers (non-TTS)
+        function playSound(type) {
+            if (typeof AudioContext === 'undefined' && typeof webkitAudioContext === 'undefined') return;
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                let frequency, duration;
+                switch (type) {
+                    case 'correct':
+                        frequency = 523.25; // C5 note
+                        duration = 0.3;
+                        break;
+                    case 'incorrect':
+                        frequency = 220; // A3 note
+                        duration = 0.5;
+                        break;
+                }
+                
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                oscillator.type = type === 'incorrect' ? 'sawtooth' : 'sine';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (error) {
+                console.warn('Sound playback failed:', error);
+            }
+        }
+
+        // Initialize the game when the page loads
+        function initGame() {
+            setRandomBackground();
+            createStars();
+            addKeyboardHints();
+            
+            if (gameStarted) {
+                generateQuestion();
+            }
+            
+            setTimeout(() => {
+                const gameContainer = document.querySelector('.game-container');
+                const startScreen = document.querySelector('.start-screen');
+                
+                if (gameStarted) {
+                    gameContainer.style.opacity = '1';
+                    gameContainer.style.transform = 'translateY(0)';
+                } else {
+                    startScreen.style.opacity = '1';
+                    startScreen.style.transform = 'translateY(0)';
+                }
+            }, 100);
+        }
+
+        // Set initial styles for containers
+        document.querySelector('.game-container').style.opacity = '0';
+        document.querySelector('.game-container').style.transform = 'translateY(20px)';
+        document.querySelector('.game-container').style.transition = 'all 0.6s ease';
+
+        document.querySelector('.start-screen').style.opacity = '0';
+        document.querySelector('.start-screen').style.transform = 'translateY(20px)';
+        document.querySelector('.start-screen').style.transition = 'all 0.6s ease';
+
+        // Initialize TTS when voices are loaded
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = initializeTTS;
+        }
+
+        // Fallback initialization
+        setTimeout(initializeTTS, 1000);
+
+        // Start the initialization when the DOM is ready
+        initGame();
+    </script>
+</body>
+</html>
